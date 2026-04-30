@@ -3,21 +3,78 @@ import pandas as pd
 import plotly.graph_objects as go
 import os
 
-st.set_page_config(page_title="CareGap", page_icon="🩺", layout="wide")
+st.set_page_config(
+    page_title="CareGap",
+    page_icon="🩺",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-# Clean styling
 st.markdown("""
 <style>
-    .main { background-color: #f8fafc; }
-    .stMetric { background: white; padding: 1rem; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-    .block-container { padding-top: 2rem; }
-    h1, h2, h3 { color: #1e293b; }
-    .red-badge { background:#fee2e2; color:#991b1b; padding:4px 12px; border-radius:20px; font-weight:600; font-size:13px; }
-    .yellow-badge { background:#fef9c3; color:#854d0e; padding:4px 12px; border-radius:20px; font-weight:600; font-size:13px; }
-    .green-badge { background:#dcfce7; color:#166534; padding:4px 12px; border-radius:20px; font-weight:600; font-size:13px; }
-    .patient-card { background:white; border-radius:12px; padding:1.2rem; margin-bottom:0.8rem; box-shadow:0 1px 4px rgba(0,0,0,0.07); border-left: 4px solid #e2e8f0; }
-    .patient-card.red { border-left-color: #ef4444; }
-    .patient-card.yellow { border-left-color: #f59e0b; }
+    /* Force light mode always */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+        background-color: #f0f4f8 !important;
+        color: #1e293b !important;
+    }
+    [data-testid="stHeader"] { background: transparent !important; }
+
+    /* Typography */
+    h1, h2, h3, p, label, div {
+        color: #1e293b !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+
+    /* Metric cards */
+    [data-testid="metric-container"] {
+        background: white !important;
+        border-radius: 16px !important;
+        padding: 1.2rem 1.5rem !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07) !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+    [data-testid="stMetricValue"] { font-size: 2.2rem !important; font-weight: 700 !important; }
+
+    /* Expanders */
+    [data-testid="stExpander"] {
+        background: white !important;
+        border-radius: 12px !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+        margin-bottom: 0.6rem !important;
+    }
+    [data-testid="stExpander"]:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+    }
+
+    /* Dataframe */
+    [data-testid="stDataFrame"] {
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    /* Selectbox */
+    [data-testid="stSelectbox"] > div {
+        background: white !important;
+        border-radius: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+    }
+
+    /* Success/error/warning boxes */
+    [data-testid="stAlert"] { border-radius: 10px !important; }
+
+    /* Divider */
+    hr { border-color: #e2e8f0 !important; margin: 1.5rem 0 !important; }
+
+    /* Main container padding */
+    .block-container { padding: 2rem 3rem !important; max-width: 1400px !important; }
+
+    /* Hide streamlit branding */
+    #MainMenu { visibility: hidden; }
+    footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -27,8 +84,11 @@ def load_data():
     df = pd.read_csv(os.path.join(BASE_DIR, 'caregap_combined.csv'))
     trends = pd.read_csv(os.path.join(BASE_DIR, 'caregap_trends.csv'))
     checkin_file = os.path.join(BASE_DIR, 'checkins.csv')
+    checkin_count = 0
+
     if os.path.exists(checkin_file):
         checkins = pd.read_csv(checkin_file)
+        checkin_count = len(checkins)
         for _, row in checkins.iterrows():
             mask = df['NAME'] == row['patient_name']
             if mask.any():
@@ -48,100 +108,144 @@ def load_data():
             return 'GREEN'
 
         df['risk_v2'] = df.apply(smart_flag, axis=1)
-        st.success(f"✅ Live data: {len(checkins)} patient check-ins this week")
-    return df, trends
 
-df, trends = load_data()
+    return df, trends, checkin_count
 
-# Header
-st.markdown("## 🩺 CareGap — Clinic Dashboard")
-st.caption("Real-time patient monitoring between clinic visits")
-st.markdown("---")
+df, trends, checkin_count = load_data()
 
-# Metrics
+# ── HEADER ──────────────────────────────────────────────
+st.markdown("""
+<div style="background:linear-gradient(135deg,#0f172a,#1e40af);
+            border-radius:20px; padding:2rem 2.5rem; margin-bottom:2rem;">
+    <h1 style="color:white!important; margin:0; font-size:2rem;">🩺 CareGap</h1>
+    <p style="color:#93c5fd!important; margin:0.3rem 0 0; font-size:1rem;">
+        Real-time patient monitoring between clinic visits
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+if checkin_count > 0:
+    st.success(f"✅ {checkin_count} patient check-ins received this week — dashboard updated live")
+
+# ── METRICS ─────────────────────────────────────────────
 col1, col2, col3, col4 = st.columns(4)
 col1.metric("👥 Total Patients", len(df))
-col2.metric("🔴 Critical", len(df[df['risk_v2']=='RED']), delta="needs callback")
-col3.metric("🟡 Watch", len(df[df['risk_v2']=='YELLOW']))
+col2.metric("🔴 Critical", len(df[df['risk_v2']=='RED']), delta="needs callback today")
+col3.metric("🟡 Watch", len(df[df['risk_v2']=='YELLOW']), delta="monitor this week")
 col4.metric("🟢 Stable", len(df[df['risk_v2']=='GREEN']))
 
 st.markdown("---")
 
-# Trend chart
-st.subheader("📈 12-Week BP Trend")
-selected = st.selectbox("Select patient:", df['NAME'].tolist())
+# ── TREND CHART ─────────────────────────────────────────
+st.markdown("### 📈 12-Week Blood Pressure Trend")
+selected = st.selectbox("Select patient to view trend:", df['NAME'].tolist(), label_visibility="collapsed")
 patient_trend = trends[trends['NAME'] == selected].sort_values('week_num')
 
 if not patient_trend.empty:
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=patient_trend['week'], y=patient_trend['systolic'],
-        mode='lines+markers', name='Systolic',
-        line=dict(color='#ef4444', width=2),
-        marker=dict(size=6)
+        mode='lines+markers', name='Systolic BP',
+        line=dict(color='#ef4444', width=3),
+        marker=dict(size=7, color='#ef4444'),
+        fill='tozeroy', fillcolor='rgba(239,68,68,0.05)'
     ))
     fig.add_trace(go.Scatter(
         x=patient_trend['week'], y=patient_trend['diastolic'],
-        mode='lines+markers', name='Diastolic',
-        line=dict(color='#3b82f6', width=2),
-        marker=dict(size=6)
+        mode='lines+markers', name='Diastolic BP',
+        line=dict(color='#3b82f6', width=3),
+        marker=dict(size=7, color='#3b82f6'),
+        fill='tozeroy', fillcolor='rgba(59,130,246,0.05)'
     ))
-    fig.add_hline(y=140, line_dash="dash", line_color="#f59e0b",
-                  annotation_text="Systolic limit 140")
-    fig.add_hline(y=90, line_dash="dash", line_color="#93c5fd",
-                  annotation_text="Diastolic limit 90")
+    fig.add_hline(y=140, line_dash="dash", line_color="#f59e0b", line_width=1.5,
+                  annotation_text="Systolic limit 140", annotation_position="top left")
+    fig.add_hline(y=90, line_dash="dash", line_color="#60a5fa", line_width=1.5,
+                  annotation_text="Diastolic limit 90", annotation_position="top left")
     fig.update_layout(
-        height=350,
+        height=320,
         plot_bgcolor='white',
         paper_bgcolor='white',
-        yaxis=dict(range=[50, 200], gridcolor='#f1f5f9'),
+        font=dict(color='#1e293b', family='Inter'),
+        yaxis=dict(range=[50, 200], gridcolor='#f1f5f9', title='mmHg'),
         xaxis=dict(gridcolor='#f1f5f9'),
-        legend=dict(orientation='h', yanchor='bottom', y=1.02),
-        margin=dict(l=20, r=20, t=40, b=20)
+        legend=dict(orientation='h', yanchor='bottom', y=1.02, x=0),
+        margin=dict(l=20, r=20, t=40, b=20),
+        hovermode='x unified'
     )
     st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
 
-# RED patients
-st.subheader("🔴 Critical — Call Today")
+# ── RED PATIENTS ─────────────────────────────────────────
+st.markdown("### 🔴 Critical Patients — Call Today")
 red = df[df['risk_v2']=='RED'].sort_values('systolic', ascending=False)
+
 if len(red) == 0:
-    st.success("No critical patients today.")
+    st.success("✅ No critical patients today. All high-risk patients are stable.")
 else:
     for _, row in red.iterrows():
-        with st.expander(f"🔴 {row['NAME']}  |  BP {int(row['systolic'])}/{int(row['diastolic'])} mmHg  |  {int(row['total_missed'])} missed doses"):
-            c1, c2, c3 = st.columns(3)
-            c1.markdown(f"**Age:** {row['AGE']}")
-            c1.markdown(f"**Gender:** {row['GENDER']}")
-            c2.markdown(f"**City:** {row['CITY']}")
-            c2.markdown(f"**Med:** {row['med_name'][:30]}")
-            if str(row.get('symptoms','')) not in ['None','nan','']:
-                c3.error(f"⚠️ {row['symptoms']}")
-            else:
-                c3.error("High BP — callback needed")
+        with st.expander(
+            f"🔴  {row['NAME']}   ·   BP {int(row['systolic'])}/{int(row['diastolic'])} mmHg   ·   {int(row['total_missed'])} missed doses"
+        ):
+            c1, c2, c3 = st.columns([1,1,1])
+            with c1:
+                st.markdown(f"**Age:** {row['AGE']}")
+                st.markdown(f"**Gender:** {row['GENDER']}")
+                st.markdown(f"**City:** {row['CITY']}")
+            with c2:
+                st.markdown(f"**Medication:** {str(row['med_name'])[:35]}")
+                st.markdown(f"**Missed doses:** {int(row['total_missed'])}")
+            with c3:
+                symptoms = str(row.get('symptoms',''))
+                if symptoms not in ['None','nan','']:
+                    st.error(f"⚠️ Symptoms: {symptoms}")
+                if row['total_missed'] >= 2 and row['systolic'] < 160:
+                    st.error("Escalated: High BP + missed medication")
+                else:
+                    st.error(f"BP {int(row['systolic'])}/{int(row['diastolic'])} — Immediate callback needed")
 
 st.markdown("---")
 
-# YELLOW patients
-st.subheader("🟡 Watch List")
+# ── YELLOW PATIENTS ──────────────────────────────────────
+st.markdown("### 🟡 Watch List — Monitor This Week")
 yellow = df[df['risk_v2']=='YELLOW'].sort_values('systolic', ascending=False)
+
 for _, row in yellow.iterrows():
-    with st.expander(f"🟡 {row['NAME']}  |  BP {int(row['systolic'])}/{int(row['diastolic'])} mmHg  |  {int(row['total_missed'])} missed doses"):
-        c1, c2, c3 = st.columns(3)
-        c1.markdown(f"**Age:** {row['AGE']}")
-        c1.markdown(f"**Gender:** {row['GENDER']}")
-        c2.markdown(f"**City:** {row['CITY']}")
-        c2.markdown(f"**Med:** {row['med_name'][:30]}")
-        c3.warning("Monitor closely this week")
+    with st.expander(
+        f"🟡  {row['NAME']}   ·   BP {int(row['systolic'])}/{int(row['diastolic'])} mmHg   ·   {int(row['total_missed'])} missed doses"
+    ):
+        c1, c2, c3 = st.columns([1,1,1])
+        with c1:
+            st.markdown(f"**Age:** {row['AGE']}")
+            st.markdown(f"**Gender:** {row['GENDER']}")
+            st.markdown(f"**City:** {row['CITY']}")
+        with c2:
+            st.markdown(f"**Medication:** {str(row['med_name'])[:35]}")
+            st.markdown(f"**Missed doses:** {int(row['total_missed'])}")
+        with c3:
+            st.warning("Monitor closely — follow up if no improvement")
 
 st.markdown("---")
 
-# All patients clean table
-st.subheader("📋 All Patients")
-filter_risk = st.selectbox("Filter by risk:", ["ALL","RED","YELLOW","GREEN"])
+# ── ALL PATIENTS TABLE ───────────────────────────────────
+st.markdown("### 📋 All Patients")
+col_f, col_s = st.columns([1,3])
+with col_f:
+    filter_risk = st.selectbox("Filter by risk:", ["ALL","🔴 RED","🟡 YELLOW","🟢 GREEN"])
+
+risk_map = {"ALL":"ALL","🔴 RED":"RED","🟡 YELLOW":"YELLOW","🟢 GREEN":"GREEN"}
+risk_val = risk_map[filter_risk]
+
 display_cols = ['NAME','AGE','GENDER','CITY','systolic','diastolic','total_missed','risk_v2']
-filtered = df[display_cols] if filter_risk=="ALL" else df[df['risk_v2']==filter_risk][display_cols]
+filtered = df[display_cols] if risk_val=="ALL" else df[df['risk_v2']==risk_val][display_cols]
 filtered = filtered.sort_values('systolic', ascending=False).reset_index(drop=True)
 filtered.columns = ['Name','Age','Gender','City','Systolic','Diastolic','Missed Doses','Risk']
+
 st.dataframe(filtered, use_container_width=True, hide_index=True)
+
+# ── FOOTER ───────────────────────────────────────────────
+st.markdown("""
+<div style="text-align:center; padding:2rem 0 1rem; color:#94a3b8; font-size:0.85rem;">
+    CareGap — Bridging the gap between clinic visits · Built with ❤️ for better patient outcomes
+</div>
+""", unsafe_allow_html=True)
