@@ -49,7 +49,15 @@ export async function GET() {
       }) || []
     }
 
-    return NextResponse.json({ patients, checkinCount })
+    const normalized = (patients || []).map((p: any) => ({
+      ...p,
+      NAME: p.name,
+      AGE: p.age,
+      GENDER: p.gender,
+      CITY: p.city,
+    }))
+
+    return NextResponse.json({ patients: normalized, checkinCount })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

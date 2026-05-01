@@ -106,8 +106,8 @@ export default function Dashboard() {
                 <div key={i} className="bg-white border border-red-200 border-l-4 border-l-red-500 rounded-xl p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-800">{p.NAME}</h3>
-                      <p className="text-slate-400 text-sm mt-0.5">{p.AGE} yrs · {p.GENDER} · {p.CITY}</p>
+                      <h3 className="font-semibold text-slate-800">{p.name || p.NAME}</h3>
+                      <p className="text-slate-400 text-sm mt-0.5">{p.age || p.AGE} yrs · {p.gender || p.GENDER} · {p.city || p.CITY}</p>
                       <div className="flex gap-4 mt-2 text-sm">
                         <span className="text-slate-600">{p.med_name?.slice(0,40)}</span>
                         <span className="text-red-600 font-medium">{p.total_missed} missed doses</span>
