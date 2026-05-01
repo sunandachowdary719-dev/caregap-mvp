@@ -44,6 +44,7 @@ export default function Home() {
         <div className="flex gap-6 text-sm font-medium items-center">
           <Link href="/about" className="text-slate-300 hover:text-white transition-colors">About</Link>
           <Link href="/faq" className="text-slate-300 hover:text-white transition-colors">FAQ</Link>
+          <a href="https://calendly.com" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">Book a Demo</a>
           <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors">View Dashboard</Link>
           <Link href="/login" className="text-slate-300 hover:text-white transition-colors">Clinic Login</Link>
           <Link href="/checkin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Patient Check-in</Link>

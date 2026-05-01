@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 export default function CheckinPage() {
-  const [patients, setPatients] = useState<string[]>([])
-  const [selectedPatient, setSelectedPatient] = useState('')
+  const [code, setCode] = useState('')
+  const [verifiedName, setVerifiedName] = useState('')
+  const [verifyError, setVerifyError] = useState('')
+  const [verifying, setVerifying] = useState(false)
+
   const [systolic, setSystolic] = useState(120)
   const [diastolic, setDiastolic] = useState(80)
   const [meds, setMeds] = useState('')
@@ -12,29 +15,26 @@ export default function CheckinPage() {
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetch('/api/patients')
-      .then(r => r.json())
-      .then(data => {
-        const names = (data.patients || []).map((p: any) => p.name || p.NAME)
-        setPatients(names)
-        setSelectedPatient(names[0])
-      })
-  }, [])
+  const symptomOptions = ['Headache', 'Dizziness', 'Chest pain', 'Shortness of breath', 'Blurred vision', 'Fatigue']
+  const missedMap: Record<string, number> = { 'Yes, every day': 0, 'Missed 1-2 days': 1, 'Missed 3+ days': 3 }
 
-  const symptomOptions = [
-    'Headache', 'Dizziness', 'Chest pain',
-    'Shortness of breath', 'Blurred vision', 'Fatigue'
-  ]
-
-  const toggleSymptom = (s: string) => {
+  const toggleSymptom = (s: string) =>
     setSymptoms(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])
-  }
 
-  const missedMap: Record<string, number> = {
-    'Yes, every day': 0,
-    'Missed 1-2 days': 1,
-    'Missed 3+ days': 3
+  async function handleVerify() {
+    if (code.length !== 6) { setVerifyError('Enter your 6-character code'); return }
+    setVerifying(true)
+    setVerifyError('')
+    try {
+      const res = await fetch(`/api/verify-patient?code=${code.toUpperCase()}`)
+      const data = await res.json()
+      if (!res.ok) { setVerifyError('Code not found. Check with your clinic.'); return }
+      setVerifiedName(data.name)
+    } catch {
+      setVerifyError('Something went wrong. Try again.')
+    } finally {
+      setVerifying(false)
+    }
   }
 
   const handleSubmit = async () => {
@@ -43,7 +43,7 @@ export default function CheckinPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        patient_name: selectedPatient,
+        patient_name: verifiedName,
         systolic,
         diastolic,
         missed_days: missedMap[meds] ?? 0,
@@ -60,7 +60,7 @@ export default function CheckinPage() {
         <h2 className="text-2xl font-bold text-slate-800 mb-2">Check-in submitted</h2>
         <p className="text-slate-500 mb-6">Your care team will review your data and reach out if needed.</p>
         <p className="text-sm text-slate-400">BP: {systolic}/{diastolic} mmHg</p>
-        <button onClick={() => setSubmitted(false)}
+        <button onClick={() => { setSubmitted(false); setVerifiedName(''); setCode(''); setMeds(''); setSymptoms([]) }}
           className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-700">
           Submit another
         </button>
@@ -71,104 +71,127 @@ export default function CheckinPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="bg-slate-900 text-white px-6 py-5">
-        <div className="max-w-2xl mx-auto flex items-start justify-between">
-          <div>
-            <a href="/" className="text-slate-400 hover:text-white text-xs font-medium transition-colors mb-2 inline-block">← CareGap</a>
-            <h1 className="text-xl font-semibold">Weekly Health Check-in</h1>
-            <p className="text-slate-400 text-sm mt-0.5">Takes 60 seconds. Helps your doctor monitor you between visits.</p>
-          </div>
+        <div className="max-w-2xl mx-auto">
+          <a href="/" className="text-slate-400 hover:text-white text-xs font-medium transition-colors mb-2 inline-block">← CareGap</a>
+          <h1 className="text-xl font-semibold">Weekly Health Check-in</h1>
+          <p className="text-slate-400 text-sm mt-0.5">Takes 60 seconds. Helps your doctor monitor you between visits.</p>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
+        {/* Step 1 — Access Code */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-800 mb-3">1. Select your name</h3>
-          <select
-            value={selectedPatient}
-            onChange={e => setSelectedPatient(e.target.value)}
-            className="w-full border border-slate-200 rounded-xl px-4 py-3 text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            {patients.map(n => <option key={n}>{n}</option>)}
-          </select>
-        </div>
-
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-800 mb-1">2. Blood Pressure Reading</h3>
-          <p className="text-slate-400 text-sm mb-4">Enter your reading from your home BP monitor</p>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm text-slate-500 font-medium">Systolic (top number)</label>
-              <input type="number" value={systolic}
-                onChange={e => setSystolic(parseInt(e.target.value))}
-                className="w-full mt-1 border border-slate-200 rounded-xl px-4 py-3 text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min={80} max={220} />
+          <h3 className="font-bold text-slate-800 mb-1">1. Enter your access code</h3>
+          <p className="text-slate-400 text-sm mb-4">Your 6-character code was provided by your clinic</p>
+          {verifiedName ? (
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-xl px-4 py-3">
+              <div>
+                <p className="text-green-800 text-sm font-semibold">{verifiedName}</p>
+                <p className="text-green-600 text-xs mt-0.5">Identity verified</p>
+              </div>
+              <button onClick={() => { setVerifiedName(''); setCode('') }}
+                className="text-green-600 text-xs underline hover:text-green-800">Change</button>
             </div>
-            <div>
-              <label className="text-sm text-slate-500 font-medium">Diastolic (bottom number)</label>
-              <input type="number" value={diastolic}
-                onChange={e => setDiastolic(parseInt(e.target.value))}
-                className="w-full mt-1 border border-slate-200 rounded-xl px-4 py-3 text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min={40} max={140} />
+          ) : (
+            <div className="flex gap-3">
+              <input
+                type="text"
+                maxLength={6}
+                value={code}
+                onChange={e => setCode(e.target.value.toUpperCase())}
+                onKeyDown={e => e.key === 'Enter' && handleVerify()}
+                placeholder="A1B2C3"
+                className="flex-1 border border-slate-200 rounded-xl px-4 py-3 text-xl font-bold tracking-widest text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={handleVerify}
+                disabled={verifying || code.length === 0}
+                className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-5 py-3 rounded-xl font-medium transition-colors"
+              >
+                {verifying ? '...' : 'Verify'}
+              </button>
             </div>
-          </div>
-          <div className="mt-3 text-center">
-            <span className={`text-lg font-bold px-4 py-1 rounded-full ${
-              systolic >= 160 || diastolic >= 100 ? 'bg-red-100 text-red-700' :
-              systolic >= 140 || diastolic >= 90 ? 'bg-yellow-100 text-yellow-700' :
-              'bg-green-100 text-green-700'
-            }`}>
-              {systolic}/{diastolic} mmHg — {
-                systolic >= 160 || diastolic >= 100 ? 'High' :
-                systolic >= 140 || diastolic >= 90 ? 'Elevated' : 'Normal'
-              }
-            </span>
-          </div>
+          )}
+          {verifyError && <p className="text-red-600 text-sm mt-2">{verifyError}</p>}
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-800 mb-4">3. Medication this week</h3>
-          <div className="space-y-3">
-            {['Yes, every day', 'Missed 1-2 days', 'Missed 3+ days'].map(option => (
-              <button key={option} onClick={() => setMeds(option)}
-                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all font-medium ${
-                  meds === option
-                    ? 'border-blue-500 bg-blue-50 text-blue-800'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
+        {/* Remaining steps — only shown after verification */}
+        {verifiedName && (
+          <>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+              <h3 className="font-bold text-slate-800 mb-1">2. Blood Pressure Reading</h3>
+              <p className="text-slate-400 text-sm mb-4">Enter your reading from your home BP monitor</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-slate-500 font-medium">Systolic (top number)</label>
+                  <input type="number" value={systolic}
+                    onChange={e => setSystolic(parseInt(e.target.value))}
+                    className="w-full mt-1 border border-slate-200 rounded-xl px-4 py-3 text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min={80} max={220} />
+                </div>
+                <div>
+                  <label className="text-sm text-slate-500 font-medium">Diastolic (bottom number)</label>
+                  <input type="number" value={diastolic}
+                    onChange={e => setDiastolic(parseInt(e.target.value))}
+                    className="w-full mt-1 border border-slate-200 rounded-xl px-4 py-3 text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min={40} max={140} />
+                </div>
+              </div>
+              <div className="mt-3 text-center">
+                <span className={`text-lg font-bold px-4 py-1 rounded-full ${
+                  systolic >= 160 || diastolic >= 100 ? 'bg-red-100 text-red-700' :
+                  systolic >= 140 || diastolic >= 90  ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-green-100 text-green-700'
                 }`}>
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
+                  {systolic}/{diastolic} mmHg — {
+                    systolic >= 160 || diastolic >= 100 ? 'High' :
+                    systolic >= 140 || diastolic >= 90  ? 'Elevated' : 'Normal'
+                  }
+                </span>
+              </div>
+            </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-          <h3 className="font-bold text-slate-800 mb-4">4. Any symptoms this week?</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {symptomOptions.map(s => (
-              <button key={s} onClick={() => toggleSymptom(s)}
-                className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                  symptoms.includes(s)
-                    ? 'border-red-400 bg-red-50 text-red-700'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                }`}>
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+              <h3 className="font-bold text-slate-800 mb-4">3. Medication this week</h3>
+              <div className="space-y-3">
+                {['Yes, every day', 'Missed 1-2 days', 'Missed 3+ days'].map(option => (
+                  <button key={option} onClick={() => setMeds(option)}
+                    className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all font-medium ${
+                      meds === option ? 'border-blue-500 bg-blue-50 text-blue-800' : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}>
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <button onClick={handleSubmit} disabled={!meds || loading}
-          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-          {loading ? 'Submitting...' : 'Submit Check-in'}
-        </button>
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+              <h3 className="font-bold text-slate-800 mb-4">4. Any symptoms this week?</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {symptomOptions.map(s => (
+                  <button key={s} onClick={() => toggleSymptom(s)}
+                    className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                      symptoms.includes(s) ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}>
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <p className="text-center text-slate-400 text-xs pb-2">
-          Your data is private and only shared with your care team
-        </p>
-        <p className="text-center text-slate-400 text-xs pb-6">
-          By submitting, you consent to CareGap storing your health data for clinical monitoring purposes.{' '}
-          <a href="https://caregap.vercel.app/privacy" className="underline hover:text-slate-300">View our Privacy Policy</a>
-        </p>
+            <button onClick={handleSubmit} disabled={!meds || loading}
+              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              {loading ? 'Submitting...' : 'Submit Check-in'}
+            </button>
+
+            <p className="text-center text-slate-400 text-xs pb-2">Your data is private and only shared with your care team</p>
+            <p className="text-center text-slate-400 text-xs pb-6">
+              By submitting, you consent to CareGap storing your health data for clinical monitoring purposes.{' '}
+              <a href="https://caregap.vercel.app/privacy" className="underline hover:text-slate-300">View our Privacy Policy</a>
+            </p>
+          </>
+        )}
       </div>
     </div>
   )

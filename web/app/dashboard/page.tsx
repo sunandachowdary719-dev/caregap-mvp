@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend } from 'recharts'
 
 interface Patient {
+  id?: string
+  name?: string
   NAME: string
   AGE: string | number
   GENDER: string
@@ -16,6 +18,16 @@ interface Patient {
   symptoms?: string
 }
 
+interface Checkin {
+  id?: string
+  patient_name: string
+  systolic: number
+  diastolic: number
+  missed_days: number
+  symptoms: string
+  created_at: string
+}
+
 export default function Dashboard() {
   const [patients, setPatients] = useState<Patient[]>([])
   const [checkinCount, setCheckinCount] = useState(0)
@@ -24,6 +36,10 @@ export default function Dashboard() {
   const [selectedPatient, setSelectedPatient] = useState<string>('')
   const [trends, setTrends] = useState<any[]>([])
   const [clinicName, setClinicName] = useState<string | null>(null)
+
+  const [modalPatient, setModalPatient] = useState<Patient | null>(null)
+  const [modalCheckins, setModalCheckins] = useState<Checkin[]>([])
+  const [modalLoading, setModalLoading] = useState(false)
 
   useEffect(() => {
     setClinicName(localStorage.getItem('clinic_name'))
@@ -48,10 +64,47 @@ export default function Dashboard() {
       .then(data => setTrends(data.trends || []))
   }, [selectedPatient])
 
+  useEffect(() => {
+    if (!modalPatient) return
+    setModalLoading(true)
+    fetch(`/api/checkins?name=${encodeURIComponent(modalPatient.NAME)}`)
+      .then(r => r.json())
+      .then(data => {
+        setModalCheckins(data.checkins || [])
+        setModalLoading(false)
+      })
+  }, [modalPatient])
+
+  function exportCSV() {
+    const headers = ['Name', 'Age', 'Gender', 'City', 'Systolic', 'Diastolic', 'Missed Doses', 'Risk', 'Symptoms']
+    const rows = patients.map(p => [
+      p.NAME, p.AGE, p.GENDER, p.CITY,
+      Math.round(parseFloat(String(p.systolic))),
+      Math.round(parseFloat(String(p.diastolic))),
+      p.total_missed, p.risk_v2,
+      p.symptoms || 'None',
+    ])
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'caregap_patients.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const red = patients.filter(p => p.risk_v2 === 'RED')
   const yellow = patients.filter(p => p.risk_v2 === 'YELLOW')
   const green = patients.filter(p => p.risk_v2 === 'GREEN')
   const filtered = filter === 'ALL' ? patients : patients.filter(p => p.risk_v2 === filter)
+
+  const peakSystolic = modalCheckins.length
+    ? Math.max(...modalCheckins.map(c => c.systolic))
+    : null
+  const peakDiastolic = modalCheckins.length
+    ? Math.max(...modalCheckins.map(c => c.diastolic))
+    : null
 
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -158,7 +211,8 @@ export default function Dashboard() {
           ) : (
             <div className="space-y-2">
               {red.map((p, i) => (
-                <div key={i} className="bg-white border border-red-200 border-l-4 border-l-red-500 rounded-xl p-5">
+                <div key={i} onClick={() => setModalPatient(p)}
+                  className="bg-white border border-red-200 border-l-4 border-l-red-500 rounded-xl p-5 cursor-pointer hover:bg-red-50 transition-colors">
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-semibold text-slate-800">{p.NAME}</h3>
@@ -166,9 +220,7 @@ export default function Dashboard() {
                       <div className="flex gap-4 mt-2 text-sm">
                         <span className="text-slate-600">{p.med_name?.slice(0,40)}</span>
                         <span className="text-red-600 font-medium">{p.total_missed} missed doses</span>
-                        {p.symptoms && p.symptoms !== 'None' && (
-                          <span className="text-red-600">Symptoms: {p.symptoms}</span>
-                        )}
+                        {p.symptoms && p.symptoms !== 'None' && <span className="text-red-600">Symptoms: {p.symptoms}</span>}
                       </div>
                     </div>
                     <div className="text-right">
@@ -188,7 +240,8 @@ export default function Dashboard() {
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Watch List — Monitor This Week</h2>
           <div className="space-y-2">
             {yellow.map((p, i) => (
-              <div key={i} className="bg-white border border-amber-200 border-l-4 border-l-amber-400 rounded-xl p-5">
+              <div key={i} onClick={() => setModalPatient(p)}
+                className="bg-white border border-amber-200 border-l-4 border-l-amber-400 rounded-xl p-5 cursor-pointer hover:bg-amber-50 transition-colors">
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="font-semibold text-slate-800">{p.NAME}</h3>
@@ -210,13 +263,19 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">All Patients</h2>
-            <div className="flex gap-1">
-              {['ALL','RED','YELLOW','GREEN'].map(f => (
-                <button key={f} onClick={() => setFilter(f)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                    filter === f ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
-                  }`}>{f}</button>
-              ))}
+            <div className="flex items-center gap-2">
+              <button onClick={exportCSV}
+                className="px-3 py-1 rounded-md text-xs font-medium bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors">
+                Export CSV
+              </button>
+              <div className="flex gap-1">
+                {['ALL','RED','YELLOW','GREEN'].map(f => (
+                  <button key={f} onClick={() => setFilter(f)}
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                      filter === f ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+                    }`}>{f}</button>
+                ))}
+              </div>
             </div>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto max-w-full">
@@ -235,7 +294,8 @@ export default function Dashboard() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filtered.sort((a,b) => parseFloat(String(b.systolic)) - parseFloat(String(a.systolic))).map((p, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <tr key={i} onClick={() => setModalPatient(p)}
+                    className="hover:bg-slate-50 transition-colors cursor-pointer">
                     <td className="px-4 py-3 font-medium text-slate-800">{p.NAME}</td>
                     <td className="px-4 py-3 text-slate-600">{p.AGE}</td>
                     <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{p.GENDER}</td>
@@ -261,6 +321,105 @@ export default function Dashboard() {
           CareGap — Bridging the gap between clinic visits
         </div>
       </div>
+
+      {/* Patient Detail Modal */}
+      {modalPatient && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={e => { if (e.target === e.currentTarget) setModalPatient(null) }}>
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-100 px-8 py-5 flex items-center justify-between rounded-t-2xl">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">{modalPatient.NAME}</h2>
+                <p className="text-slate-400 text-sm mt-0.5">{modalPatient.AGE} yrs · {modalPatient.GENDER} · {modalPatient.CITY}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`px-3 py-1 rounded-md text-sm font-semibold ${
+                  modalPatient.risk_v2 === 'RED' ? 'bg-red-100 text-red-700' :
+                  modalPatient.risk_v2 === 'YELLOW' ? 'bg-amber-100 text-amber-700' :
+                  'bg-green-100 text-green-700'
+                }`}>{modalPatient.risk_v2}</span>
+                <button onClick={() => setModalPatient(null)}
+                  className="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+              </div>
+            </div>
+
+            <div className="px-8 py-6 space-y-6">
+              {/* Current Vitals */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Current Vitals</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-slate-50 rounded-xl p-4 text-center">
+                    <p className="text-xs text-slate-500 mb-1">Blood Pressure</p>
+                    <p className="text-xl font-bold text-slate-900">
+                      {Math.round(parseFloat(String(modalPatient.systolic)))}/{Math.round(parseFloat(String(modalPatient.diastolic)))}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">mmHg</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-4 text-center">
+                    <p className="text-xs text-slate-500 mb-1">Missed Doses</p>
+                    <p className="text-xl font-bold text-slate-900">{modalPatient.total_missed}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">this week</p>
+                  </div>
+                  <div className="bg-slate-50 rounded-xl p-4 text-center">
+                    <p className="text-xs text-slate-500 mb-1">Peak BP (12 wks)</p>
+                    {peakSystolic !== null ? (
+                      <>
+                        <p className="text-xl font-bold text-slate-900">{peakSystolic}/{peakDiastolic}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">mmHg</p>
+                      </>
+                    ) : (
+                      <p className="text-sm text-slate-400 mt-2">—</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Medication */}
+              {modalPatient.med_name && (
+                <div>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Medication</h3>
+                  <p className="text-sm text-slate-700 bg-slate-50 rounded-lg px-4 py-3">{modalPatient.med_name}</p>
+                </div>
+              )}
+
+              {/* Symptoms */}
+              {modalPatient.symptoms && modalPatient.symptoms !== 'None' && (
+                <div>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Reported Symptoms</h3>
+                  <p className="text-sm text-red-700 bg-red-50 rounded-lg px-4 py-3">{modalPatient.symptoms}</p>
+                </div>
+              )}
+
+              {/* Check-in History */}
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Check-in History</h3>
+                {modalLoading ? (
+                  <p className="text-slate-400 text-sm text-center py-4">Loading history...</p>
+                ) : modalCheckins.length === 0 ? (
+                  <p className="text-slate-400 text-sm">No check-ins recorded yet.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {modalCheckins.map((c, i) => (
+                      <div key={i} className="flex items-center justify-between bg-slate-50 rounded-lg px-4 py-3 text-sm">
+                        <div className="flex items-center gap-4">
+                          <span className="font-semibold text-slate-800">{c.systolic}/{c.diastolic} mmHg</span>
+                          <span className="text-slate-500">{c.missed_days} missed dose{c.missed_days !== 1 ? 's' : ''}</span>
+                          {c.symptoms && c.symptoms !== 'None' && (
+                            <span className="text-red-600 text-xs">{c.symptoms}</span>
+                          )}
+                        </div>
+                        <span className="text-slate-400 text-xs shrink-0">
+                          {new Date(c.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
