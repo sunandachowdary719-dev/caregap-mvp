@@ -119,7 +119,7 @@ export default function Dashboard() {
                 <YAxis domain={[50, 200]} tick={{ fontSize: 11, fill: '#94a3b8' }} />
                 <Tooltip
                   contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
-                  formatter={(value: any, name: string) => [`${value} mmHg`, name === 'systolic' ? 'Systolic' : 'Diastolic']}
+                  formatter={(value: any, name: any) => [`${value} mmHg`, name === 'systolic' ? 'Systolic' : 'Diastolic']}
                 />
                 <Legend formatter={(value) => value === 'systolic' ? 'Systolic' : 'Diastolic'} />
                 <ReferenceLine y={140} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: '140', fontSize: 10, fill: '#f59e0b' }} />
