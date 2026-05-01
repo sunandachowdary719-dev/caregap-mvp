@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, ResponsiveContainer, Legend } from 'recharts'
 
 interface Patient {
   NAME: string
@@ -20,16 +21,27 @@ export default function Dashboard() {
   const [checkinCount, setCheckinCount] = useState(0)
   const [filter, setFilter] = useState('ALL')
   const [loading, setLoading] = useState(true)
+  const [selectedPatient, setSelectedPatient] = useState<string>('')
+  const [trends, setTrends] = useState<any[]>([])
 
   useEffect(() => {
     fetch('/api/patients')
       .then(r => r.json())
       .then(data => {
-        setPatients(data.patients || [])
+        const pts = data.patients || []
+        setPatients(pts)
         setCheckinCount(data.checkinCount || 0)
         setLoading(false)
+        if (pts.length > 0) setSelectedPatient(pts[0].NAME)
       })
   }, [])
+
+  useEffect(() => {
+    if (!selectedPatient) return
+    fetch(`/api/trends?name=${encodeURIComponent(selectedPatient)}`)
+      .then(r => r.json())
+      .then(data => setTrends(data.trends || []))
+  }, [selectedPatient])
 
   const red = patients.filter(p => p.risk_v2 === 'RED')
   const yellow = patients.filter(p => p.risk_v2 === 'YELLOW')
@@ -66,7 +78,7 @@ export default function Dashboard() {
 
         {checkinCount > 0 && (
           <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-3 mb-6">
-            <p className="text-green-800 text-sm font-medium">{checkinCount} patient check-ins received this week — dashboard updated in real time</p>
+            <p className="text-green-800 text-sm font-medium">{checkinCount} patient check-ins received this week</p>
           </div>
         )}
 
@@ -87,6 +99,38 @@ export default function Dashboard() {
               {m.sub && <p className="text-xs text-slate-400 mt-1">{m.sub}</p>}
             </div>
           ))}
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">12-Week Blood Pressure Trend</h2>
+            <select
+              value={selectedPatient}
+              onChange={e => setSelectedPatient(e.target.value)}
+              className="border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              {patients.map(p => <option key={p.NAME}>{p.NAME}</option>)}
+            </select>
+          </div>
+          {trends.length > 0 ? (
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={trends} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <YAxis domain={[50, 200]} tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}
+                  formatter={(value: any, name: string) => [`${value} mmHg`, name === 'systolic' ? 'Systolic' : 'Diastolic']}
+                />
+                <Legend formatter={(value) => value === 'systolic' ? 'Systolic' : 'Diastolic'} />
+                <ReferenceLine y={140} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: '140', fontSize: 10, fill: '#f59e0b' }} />
+                <ReferenceLine y={90} stroke="#93c5fd" strokeDasharray="4 4" label={{ value: '90', fontSize: 10, fill: '#93c5fd' }} />
+                <Line type="monotone" dataKey="systolic" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="diastolic" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-slate-400 text-sm text-center py-10">Loading trend data...</p>
+          )}
         </div>
 
         <div className="mb-8">
