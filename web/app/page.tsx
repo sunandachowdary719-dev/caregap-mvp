@@ -131,7 +131,7 @@ export default function Home() {
 
             {status === 'success' ? (
               <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-4 text-center">
-                <p className="text-green-800 text-sm font-medium">Request received. We will be in touch shortly.</p>
+                <p className="text-green-800 text-sm font-medium">Thank you. We will contact you within 24 hours.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">

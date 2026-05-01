@@ -63,6 +63,7 @@ export default function Dashboard() {
             <p className="text-slate-400 text-sm mt-0.5">Patient Monitoring Dashboard</p>
           </div>
           <div className="flex items-center gap-6">
+            <a href="/" className="text-slate-400 hover:text-white text-sm font-medium transition-colors">← Home</a>
             <a href="/checkin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
               Patient Check-in
             </a>
