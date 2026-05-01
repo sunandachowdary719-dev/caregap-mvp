@@ -91,6 +91,36 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section className="px-8 py-20 bg-white">
+        <div className="max-w-md mx-auto text-center">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10">Pricing</h2>
+          <div className="border border-slate-200 rounded-xl p-10">
+            <p className="text-4xl font-bold text-slate-900">$500<span className="text-lg font-medium text-slate-500">/month per clinic</span></p>
+            <ul className="mt-8 space-y-3 text-sm text-slate-600 text-left">
+              {[
+                'Unlimited patients',
+                'Weekly risk alerts',
+                'Patient check-in forms',
+                'Email digests',
+                'RPM billing support',
+              ].map(item => (
+                <li key={item} className="flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <a
+              href="mailto:sunandachowdary719@gmail.com"
+              className="mt-8 inline-block w-full bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+            >
+              Request Demo
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 text-sm text-center px-8 py-8">
         CareGap — Bridging the gap between clinic visits

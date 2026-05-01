@@ -49,7 +49,14 @@ export async function GET() {
       }) || []
     }
 
-    const normalized = (patients || []).map((p: any) => ({
+    const seen = new Map<string, boolean>()
+    const deduped = (patients || []).filter((p: any) => {
+      if (seen.has(p.name)) return false
+      seen.set(p.name, true)
+      return true
+    })
+
+    const normalized = deduped.map((p: any) => ({
       ...p,
       NAME: p.name,
       AGE: p.age,
