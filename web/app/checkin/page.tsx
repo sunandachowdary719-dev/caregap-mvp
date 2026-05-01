@@ -55,19 +55,15 @@ export default function CheckinPage() {
   }
 
   if (submitted) return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-10 shadow-lg text-center max-w-md">
-        <div className="text-6xl mb-4">✅</div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">Check-in submitted!</h2>
-        <p className="text-slate-500 mb-6">Your care team will review your data and reach out if needed.</p>
-        <p className="text-sm text-slate-400">BP: {systolic}/{diastolic} mmHg · Meds: {meds}</p>
-        <button onClick={() => setSubmitted(false)}
-          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-700">
-          Submit another
-        </button>
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-slate-900 text-white px-8 py-5">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-xl font-semibold">Weekly Health Check-in</h1>
+          <p className="text-slate-400 text-sm mt-0.5">Takes 60 seconds. Helps your doctor monitor you between visits.</p>
+        </div>
       </div>
-    </div>
-  )
+)
 
   return (
     <div className="min-h-screen bg-slate-50">
