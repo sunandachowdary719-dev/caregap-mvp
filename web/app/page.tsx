@@ -1,14 +1,37 @@
+'use client'
+
 import Link from 'next/link'
+import { useState } from 'react'
 
 export default function Home() {
+  const [form, setForm] = useState({ clinicName: '', doctorName: '', email: '', phone: '', patientCount: '' })
+  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setStatus('sending')
+    try {
+      const res = await fetch('/api/demo-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (!res.ok) throw new Error()
+      setStatus('success')
+    } catch {
+      setStatus('error')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white text-slate-800 font-sans">
 
       {/* Nav */}
       <nav className="bg-slate-900 text-white px-8 py-4 flex items-center justify-between">
         <span className="text-lg font-semibold tracking-tight">CareGap</span>
-        <div className="flex gap-6 text-sm font-medium">
+        <div className="flex gap-6 text-sm font-medium items-center">
           <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors">View Dashboard</Link>
+          <Link href="/login" className="text-slate-300 hover:text-white transition-colors">Clinic Login</Link>
           <Link href="/checkin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Patient Check-in</Link>
         </div>
       </nav>
@@ -93,30 +116,56 @@ export default function Home() {
 
       {/* Pricing */}
       <section className="px-8 py-20 bg-white">
-        <div className="max-w-md mx-auto text-center">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10">Pricing</h2>
+        <div className="max-w-md mx-auto">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10 text-center">Pricing</h2>
           <div className="border border-slate-200 rounded-xl p-10">
-            <p className="text-4xl font-bold text-slate-900">$500<span className="text-lg font-medium text-slate-500">/month per clinic</span></p>
-            <ul className="mt-8 space-y-3 text-sm text-slate-600 text-left">
-              {[
-                'Unlimited patients',
-                'Weekly risk alerts',
-                'Patient check-in forms',
-                'Email digests',
-                'RPM billing support',
-              ].map(item => (
+            <p className="text-4xl font-bold text-slate-900 text-center">$500<span className="text-lg font-medium text-slate-500">/month per clinic</span></p>
+            <ul className="mt-6 mb-8 space-y-3 text-sm text-slate-600">
+              {['Unlimited patients', 'Weekly risk alerts', 'Patient check-in forms', 'Email digests', 'RPM billing support'].map(item => (
                 <li key={item} className="flex items-center gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
                   {item}
                 </li>
               ))}
             </ul>
-            <a
-              href="mailto:sunandachowdary719@gmail.com"
-              className="mt-8 inline-block w-full bg-slate-900 hover:bg-slate-700 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
-            >
-              Request Demo
-            </a>
+
+            {status === 'success' ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-4 text-center">
+                <p className="text-green-800 text-sm font-medium">Request received. We will be in touch shortly.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {[
+                  { key: 'clinicName', label: 'Clinic Name', type: 'text', placeholder: 'Riverside Primary Care' },
+                  { key: 'doctorName', label: 'Doctor Name', type: 'text', placeholder: 'Dr. Jane Smith' },
+                  { key: 'email',      label: 'Email',       type: 'email', placeholder: 'clinic@example.com' },
+                  { key: 'phone',      label: 'Phone',       type: 'tel',   placeholder: '(555) 000-0000' },
+                  { key: 'patientCount', label: 'Patient Count', type: 'number', placeholder: '250' },
+                ].map(({ key, label, type, placeholder }) => (
+                  <div key={key}>
+                    <label className="block text-xs font-medium text-slate-600 uppercase tracking-wide mb-1.5">{label}</label>
+                    <input
+                      required
+                      type={type}
+                      placeholder={placeholder}
+                      value={form[key as keyof typeof form]}
+                      onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+                      className="w-full border border-slate-200 rounded-lg px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    />
+                  </div>
+                ))}
+                {status === 'error' && (
+                  <p className="text-red-600 text-xs">Something went wrong. Please try again.</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={status === 'sending'}
+                  className="w-full bg-slate-900 hover:bg-slate-700 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+                >
+                  {status === 'sending' ? 'Sending...' : 'Request Demo'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </section>
