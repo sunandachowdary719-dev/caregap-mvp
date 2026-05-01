@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react'
 
 interface Patient {
   NAME: string
-  AGE: string
+  AGE: string | number
   GENDER: string
   CITY: string
-  systolic: string
-  diastolic: string
-  total_missed: string
+  systolic: string | number
+  diastolic: string | number
+  total_missed: string | number
   med_name: string
   risk_v2: string
   symptoms?: string
@@ -44,8 +44,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-
-      {/* Header */}
       <div className="bg-slate-900 text-white px-8 py-5 border-b border-slate-700">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
@@ -53,8 +51,7 @@ export default function Dashboard() {
             <p className="text-slate-400 text-sm mt-0.5">Patient Monitoring Dashboard</p>
           </div>
           <div className="flex items-center gap-6">
-            <a href="/checkin"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            <a href="/checkin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
               Patient Check-in
             </a>
             <div className="text-right">
@@ -73,7 +70,6 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Metrics */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Total Patients', value: patients.length, color: 'slate' },
@@ -93,21 +89,18 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Critical */}
         <div className="mb-8">
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Critical — Call Today</h2>
           {red.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-xl p-5 text-slate-500 text-sm">
-              No critical patients at this time.
-            </div>
+            <div className="bg-white border border-slate-200 rounded-xl p-5 text-slate-500 text-sm">No critical patients at this time.</div>
           ) : (
             <div className="space-y-2">
               {red.map((p, i) => (
                 <div key={i} className="bg-white border border-red-200 border-l-4 border-l-red-500 rounded-xl p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-semibold text-slate-800">{p.name || p.NAME}</h3>
-                      <p className="text-slate-400 text-sm mt-0.5">{p.age || p.AGE} yrs · {p.gender || p.GENDER} · {p.city || p.CITY}</p>
+                      <h3 className="font-semibold text-slate-800">{p.NAME}</h3>
+                      <p className="text-slate-400 text-sm mt-0.5">{p.AGE} yrs · {p.GENDER} · {p.CITY}</p>
                       <div className="flex gap-4 mt-2 text-sm">
                         <span className="text-slate-600">{p.med_name?.slice(0,40)}</span>
                         <span className="text-red-600 font-medium">{p.total_missed} missed doses</span>
@@ -118,7 +111,7 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right">
                       <span className="bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm font-semibold">
-                        {Math.round(parseFloat(p.systolic))}/{Math.round(parseFloat(p.diastolic))} mmHg
+                        {Math.round(parseFloat(String(p.systolic)))}/{Math.round(parseFloat(String(p.diastolic)))} mmHg
                       </span>
                       <p className="text-red-500 text-xs mt-1">Above threshold</p>
                     </div>
@@ -129,7 +122,6 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Watch */}
         <div className="mb-8">
           <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Watch List — Monitor This Week</h2>
           <div className="space-y-2">
@@ -145,7 +137,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <span className="bg-amber-100 text-amber-700 px-3 py-1 rounded-md text-sm font-semibold">
-                    {Math.round(parseFloat(p.systolic))}/{Math.round(parseFloat(p.diastolic))} mmHg
+                    {Math.round(parseFloat(String(p.systolic)))}/{Math.round(parseFloat(String(p.diastolic)))} mmHg
                   </span>
                 </div>
               </div>
@@ -153,7 +145,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* All patients */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">All Patients</h2>
@@ -176,14 +167,14 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtered.sort((a,b) => parseFloat(b.systolic) - parseFloat(a.systolic)).map((p, i) => (
+                {filtered.sort((a,b) => parseFloat(String(b.systolic)) - parseFloat(String(a.systolic))).map((p, i) => (
                   <tr key={i} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-800">{p.NAME}</td>
                     <td className="px-4 py-3 text-slate-600">{p.AGE}</td>
                     <td className="px-4 py-3 text-slate-600">{p.GENDER}</td>
                     <td className="px-4 py-3 text-slate-600">{p.CITY}</td>
-                    <td className="px-4 py-3 text-slate-600">{Math.round(parseFloat(p.systolic))}</td>
-                    <td className="px-4 py-3 text-slate-600">{Math.round(parseFloat(p.diastolic))}</td>
+                    <td className="px-4 py-3 text-slate-600">{Math.round(parseFloat(String(p.systolic)))}</td>
+                    <td className="px-4 py-3 text-slate-600">{Math.round(parseFloat(String(p.diastolic)))}</td>
                     <td className="px-4 py-3 text-slate-600">{p.total_missed}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
