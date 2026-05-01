@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.91.1",
+    "@supabase/supabase-js": "^2.105.1",
     "@types/papaparse": "5.5.2",
     "dotenv": "^17.4.2",
     "next": "^16.2.4",
