@@ -23,6 +23,11 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [selectedPatient, setSelectedPatient] = useState<string>('')
   const [trends, setTrends] = useState<any[]>([])
+  const [clinicName, setClinicName] = useState<string | null>(null)
+
+  useEffect(() => {
+    setClinicName(localStorage.getItem('clinic_name'))
+  }, [])
 
   useEffect(() => {
     fetch('/api/patients')
@@ -56,12 +61,18 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-amber-50 border-b border-amber-200 px-8 py-2.5 text-center">
-        <p className="text-amber-800 text-sm">
-          Demo Mode — Using synthetic patient data.{' '}
-          <a href="/#demo-form" className="font-medium underline hover:text-amber-900">Contact us to set up your clinic.</a>
-        </p>
-      </div>
+      {clinicName ? (
+        <div className="bg-blue-50 border-b border-blue-200 px-8 py-2.5 text-center">
+          <p className="text-blue-800 text-sm font-medium">Welcome, {clinicName}</p>
+        </div>
+      ) : (
+        <div className="bg-amber-50 border-b border-amber-200 px-8 py-2.5 text-center">
+          <p className="text-amber-800 text-sm">
+            You are viewing demo data.{' '}
+            <a href="/login" className="font-medium underline hover:text-amber-900">Sign in to see your clinic patients.</a>
+          </p>
+        </div>
+      )}
       <div className="bg-slate-900 text-white px-8 py-5 border-b border-slate-700">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>

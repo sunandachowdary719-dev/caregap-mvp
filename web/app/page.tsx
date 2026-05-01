@@ -6,6 +6,18 @@ import { useState } from 'react'
 export default function Home() {
   const [form, setForm] = useState({ clinicName: '', doctorName: '', email: '', phone: '', patientCount: '' })
   const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle')
+  const [trialLoading, setTrialLoading] = useState(false)
+
+  async function handleTrial() {
+    setTrialLoading(true)
+    try {
+      const res = await fetch('/api/create-checkout', { method: 'POST' })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch {
+      setTrialLoading(false)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -127,41 +139,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Who This Is For */}
       <section className="px-8 py-20 bg-white">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10 text-center">What Clinics Are Saying</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10 text-center">Who This Is For</h2>
           <div className="grid grid-cols-3 gap-6">
             {[
               {
-                quote: "Before CareGap, we had no way of knowing if a hypertension patient had stopped taking their medication until they showed up in crisis. Now we catch those patients two weeks earlier. That's the difference between a phone call and an ED visit.",
-                name: 'Sandra M.',
-                title: 'Practice Manager',
-                clinic: 'Lakeview Family Medicine',
-                city: 'Ann Arbor, MI',
+                title: 'Independent Primary Care Practices',
+                points: [
+                  'Panels with a high proportion of hypertension or pre-hypertension patients',
+                  'Limited staff capacity for proactive outreach between visits',
+                  'Looking to qualify for RPM reimbursements without a large technology investment',
+                ],
               },
               {
-                quote: "We were skeptical that patients would actually submit weekly check-ins. The form is so simple that our compliance rate is over 70%. The dashboard has cut our morning chart review time in half.",
-                name: 'James T.',
-                title: 'Office Director',
-                clinic: 'Northside Primary Care',
-                city: 'Grand Rapids, MI',
+                title: 'Family Medicine Clinics',
+                points: [
+                  'Managing multi-condition patients across age groups, including elderly patients on multiple medications',
+                  'Concerned about medication non-adherence driving avoidable hospitalizations',
+                  'Want structured weekly touchpoints without scheduling additional appointments',
+                ],
               },
               {
-                quote: "The RPM billing support alone covers the subscription cost in the first week. But the real value is knowing which patients to call on Monday morning without having to dig through charts all weekend.",
-                name: 'Priya K.',
-                title: 'Clinic Administrator',
-                clinic: 'Riverside Internal Medicine',
-                city: 'Detroit, MI',
+                title: 'Internal Medicine Offices',
+                points: [
+                  'Treating patients with chronic hypertension, type 2 diabetes, or cardiovascular risk factors',
+                  'Need longitudinal blood pressure trend data between quarterly visits',
+                  'Seeking a lightweight tool that integrates with existing workflows without EMR changes',
+                ],
               },
-            ].map(({ quote, name, title, clinic, city }) => (
-              <div key={name} className="bg-slate-50 rounded-xl p-8 flex flex-col">
-                <p className="text-slate-700 text-sm leading-relaxed flex-1">"{quote}"</p>
-                <div className="mt-6 pt-5 border-t border-slate-200">
-                  <p className="font-semibold text-slate-900 text-sm">{name}</p>
-                  <p className="text-slate-500 text-xs mt-0.5">{title}, {clinic}</p>
-                  <p className="text-slate-400 text-xs">{city}</p>
-                </div>
+            ].map(({ title, points }) => (
+              <div key={title} className="border border-slate-200 rounded-xl p-8">
+                <h3 className="font-semibold text-slate-900 mb-5">{title}</h3>
+                <ul className="space-y-3">
+                  {points.map(point => (
+                    <li key={point} className="flex gap-3 text-sm text-slate-600 leading-relaxed">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0 mt-1.5" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
@@ -217,6 +235,14 @@ export default function Home() {
                   className="w-full bg-slate-900 hover:bg-slate-700 disabled:opacity-50 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
                 >
                   {status === 'sending' ? 'Sending...' : 'Request Demo'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleTrial}
+                  disabled={trialLoading}
+                  className="w-full border border-slate-300 hover:border-slate-500 disabled:opacity-50 text-slate-700 text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+                >
+                  {trialLoading ? 'Redirecting...' : 'Start Free Trial'}
                 </button>
               </form>
             )}
