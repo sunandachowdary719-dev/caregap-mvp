@@ -1,23 +1,27 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export async function POST(request: Request) {
   try {
     const body = await request.json()
     const { patient_name, systolic, diastolic, missed_days, symptoms } = body
-    
-    const checkinPath = path.join(process.cwd(), 'public', 'checkins.csv')
-    const date = new Date().toISOString().split('T')[0]
-    const newLine = `${patient_name},${date},${systolic},${diastolic},${missed_days},${symptoms}\n`
-    
-    if (!fs.existsSync(checkinPath)) {
-      fs.writeFileSync(checkinPath, 'patient_name,date,systolic,diastolic,missed_days,symptoms\n')
-    }
-    fs.appendFileSync(checkinPath, newLine)
-    
+
+    const { error } = await supabase.from('checkins').insert({
+      patient_name,
+      systolic,
+      diastolic,
+      missed_days,
+      symptoms
+    })
+
+    if (error) throw error
     return NextResponse.json({ success: true })
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to save checkin' }, { status: 500 })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

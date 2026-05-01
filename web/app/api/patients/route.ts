@@ -1,66 +1,56 @@
 import { NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
+import { createClient } from '@supabase/supabase-js'
 
-function parseCSV(content: string) {
-  const lines = content.trim().split('\n')
-  const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
-  return lines.slice(1).map(line => {
-    const values = line.split(',').map(v => v.trim().replace(/"/g, ''))
-    return Object.fromEntries(headers.map((h, i) => [h, values[i]]))
-  })
-}
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
-function smartFlag(systolic: number, diastolic: number, missed: number, symptoms: string): string {
-  const s = symptoms?.toLowerCase() || ''
-  if (s.includes('chest pain') || s.includes('shortness')) return 'RED'
-  if (systolic >= 160 || diastolic >= 100) return 'RED'
-  if ((systolic >= 140 || diastolic >= 90) && missed >= 2) return 'RED'
-  if (systolic >= 140 || diastolic >= 90) return 'YELLOW'
+function smartFlag(s: number, d: number, missed: number, symptoms: string): string {
+  const sym = symptoms?.toLowerCase() || ''
+  if (sym.includes('chest pain') || sym.includes('shortness')) return 'RED'
+  if (s >= 160 || d >= 100) return 'RED'
+  if ((s >= 140 || d >= 90) && missed >= 2) return 'RED'
+  if (s >= 140 || d >= 90) return 'YELLOW'
   if (missed >= 3) return 'YELLOW'
   return 'GREEN'
 }
 
 export async function GET() {
   try {
-    const dataDir = path.join(process.cwd(), 'public')
-    
-    const patientsCSV = fs.readFileSync(path.join(dataDir, 'caregap_combined.csv'), 'utf8')
-    const trendsCSV = fs.readFileSync(path.join(dataDir, 'caregap_trends.csv'), 'utf8')
-    
-    let patients = parseCSV(patientsCSV)
-    const trends = parseCSV(trendsCSV)
+    let { data: patients, error } = await supabase
+      .from('patients')
+      .select('*')
+      .order('systolic', { ascending: false })
 
-    // Merge checkins if exist
-    const checkinPath = path.join(dataDir, 'checkins.csv')
-    let checkinCount = 0
-    if (fs.existsSync(checkinPath)) {
-      const checkins = parseCSV(fs.readFileSync(checkinPath, 'utf8'))
-      checkinCount = checkins.length
-      checkins.forEach(checkin => {
-        const patient = patients.find(p => p.NAME === checkin.patient_name)
-        if (patient) {
-          patient.systolic = checkin.systolic
-          patient.diastolic = checkin.diastolic
-          patient.total_missed = checkin.missed_days
-          patient.symptoms = checkin.symptoms
+    if (error) throw error
+
+    const { data: checkins } = await supabase
+      .from('checkins')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    const checkinCount = checkins?.length || 0
+
+    if (checkins && checkins.length > 0) {
+      patients = patients?.map(p => {
+        const latest = checkins.find(c => c.patient_name === p.name)
+        if (latest) {
+          return {
+            ...p,
+            systolic: latest.systolic,
+            diastolic: latest.diastolic,
+            total_missed: latest.missed_days,
+            symptoms: latest.symptoms,
+            risk_v2: smartFlag(latest.systolic, latest.diastolic, latest.missed_days, latest.symptoms)
+          }
         }
-      })
+        return p
+      }) || []
     }
 
-    // Re-flag
-    patients = patients.map(p => ({
-      ...p,
-      risk_v2: smartFlag(
-        parseFloat(p.systolic),
-        parseFloat(p.diastolic),
-        parseFloat(p.total_missed),
-        p.symptoms || ''
-      )
-    }))
-
-    return NextResponse.json({ patients, trends, checkinCount })
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to load data' }, { status: 500 })
+    return NextResponse.json({ patients, checkinCount })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
