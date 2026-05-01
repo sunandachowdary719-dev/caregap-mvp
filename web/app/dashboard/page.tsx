@@ -56,6 +56,12 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <div className="bg-amber-50 border-b border-amber-200 px-8 py-2.5 text-center">
+        <p className="text-amber-800 text-sm">
+          Demo Mode — Using synthetic patient data.{' '}
+          <a href="/#demo-form" className="font-medium underline hover:text-amber-900">Contact us to set up your clinic.</a>
+        </p>
+      </div>
       <div className="bg-slate-900 text-white px-8 py-5 border-b border-slate-700">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>

@@ -159,8 +159,12 @@ export default function CheckinPage() {
           {loading ? 'Submitting...' : 'Submit Check-in'}
         </button>
 
-        <p className="text-center text-slate-400 text-xs pb-6">
+        <p className="text-center text-slate-400 text-xs pb-2">
           Your data is private and only shared with your care team
+        </p>
+        <p className="text-center text-slate-400 text-xs pb-6">
+          By submitting, you consent to CareGap storing your health data for clinical monitoring purposes.{' '}
+          <a href="https://caregap.vercel.app/privacy" className="underline hover:text-slate-300">View our Privacy Policy</a>
         </p>
       </div>
     </div>

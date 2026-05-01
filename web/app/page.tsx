@@ -30,6 +30,7 @@ export default function Home() {
       <nav className="bg-slate-900 text-white px-8 py-4 flex items-center justify-between">
         <span className="text-lg font-semibold tracking-tight">CareGap</span>
         <div className="flex gap-6 text-sm font-medium items-center">
+          <Link href="/about" className="text-slate-300 hover:text-white transition-colors">About</Link>
           <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors">View Dashboard</Link>
           <Link href="/login" className="text-slate-300 hover:text-white transition-colors">Clinic Login</Link>
           <Link href="/checkin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Patient Check-in</Link>
@@ -172,7 +173,13 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 text-sm text-center px-8 py-8">
-        CareGap — Bridging the gap between clinic visits
+        <p>CareGap — Bridging the gap between clinic visits</p>
+        <div className="flex justify-center gap-6 mt-3 text-xs">
+          <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+          <Link href="/hipaa" className="hover:text-white transition-colors">HIPAA Notice</Link>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">© 2026 CareGap. All rights reserved.</p>
       </footer>
 
     </div>
