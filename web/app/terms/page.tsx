@@ -69,7 +69,7 @@ export default function Terms() {
 
           <section>
             <h2 className="text-base font-semibold text-slate-900 mb-3">9. Contact</h2>
-            <p>For questions about these terms, contact us at:<br /><a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a></p>
+            <p>For questions about these terms, contact us at:<br /><a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a></p>
           </section>
 
         </div>

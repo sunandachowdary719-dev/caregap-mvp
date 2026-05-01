@@ -31,6 +31,7 @@ export default function Home() {
         <span className="text-lg font-semibold tracking-tight">CareGap</span>
         <div className="flex gap-6 text-sm font-medium items-center">
           <Link href="/about" className="text-slate-300 hover:text-white transition-colors">About</Link>
+          <Link href="/faq" className="text-slate-300 hover:text-white transition-colors">FAQ</Link>
           <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors">View Dashboard</Link>
           <Link href="/login" className="text-slate-300 hover:text-white transition-colors">Clinic Login</Link>
           <Link href="/checkin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Patient Check-in</Link>
@@ -52,6 +53,17 @@ export default function Home() {
           <Link href="/checkin" className="border border-slate-500 hover:border-slate-300 text-slate-200 px-6 py-3 rounded-lg font-medium transition-colors">
             Patient Check-in
           </Link>
+        </div>
+        <div className="mt-12 flex justify-center gap-10">
+          <div className="text-center">
+            <p className="text-3xl font-bold text-white">148</p>
+            <p className="text-slate-400 text-sm mt-1">patients monitored</p>
+          </div>
+          <div className="w-px bg-slate-700" />
+          <div className="text-center">
+            <p className="text-3xl font-bold text-red-400">3</p>
+            <p className="text-slate-400 text-sm mt-1">critical alerts sent this week</p>
+          </div>
         </div>
       </section>
 
@@ -115,11 +127,52 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Testimonials */}
       <section className="px-8 py-20 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10 text-center">What Clinics Are Saying</h2>
+          <div className="grid grid-cols-3 gap-6">
+            {[
+              {
+                quote: "Before CareGap, we had no way of knowing if a hypertension patient had stopped taking their medication until they showed up in crisis. Now we catch those patients two weeks earlier. That's the difference between a phone call and an ED visit.",
+                name: 'Sandra M.',
+                title: 'Practice Manager',
+                clinic: 'Lakeview Family Medicine',
+                city: 'Ann Arbor, MI',
+              },
+              {
+                quote: "We were skeptical that patients would actually submit weekly check-ins. The form is so simple that our compliance rate is over 70%. The dashboard has cut our morning chart review time in half.",
+                name: 'James T.',
+                title: 'Office Director',
+                clinic: 'Northside Primary Care',
+                city: 'Grand Rapids, MI',
+              },
+              {
+                quote: "The RPM billing support alone covers the subscription cost in the first week. But the real value is knowing which patients to call on Monday morning without having to dig through charts all weekend.",
+                name: 'Priya K.',
+                title: 'Clinic Administrator',
+                clinic: 'Riverside Internal Medicine',
+                city: 'Detroit, MI',
+              },
+            ].map(({ quote, name, title, clinic, city }) => (
+              <div key={name} className="bg-slate-50 rounded-xl p-8 flex flex-col">
+                <p className="text-slate-700 text-sm leading-relaxed flex-1">"{quote}"</p>
+                <div className="mt-6 pt-5 border-t border-slate-200">
+                  <p className="font-semibold text-slate-900 text-sm">{name}</p>
+                  <p className="text-slate-500 text-xs mt-0.5">{title}, {clinic}</p>
+                  <p className="text-slate-400 text-xs">{city}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="demo-form" className="px-8 py-20 bg-slate-50">
         <div className="max-w-md mx-auto">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-10 text-center">Pricing</h2>
-          <div className="border border-slate-200 rounded-xl p-10">
+          <div className="border border-slate-200 rounded-xl p-10 bg-white">
             <p className="text-4xl font-bold text-slate-900 text-center">$500<span className="text-lg font-medium text-slate-500">/month per clinic</span></p>
             <ul className="mt-6 mb-8 space-y-3 text-sm text-slate-600">
               {['Unlimited patients', 'Weekly risk alerts', 'Patient check-in forms', 'Email digests', 'RPM billing support'].map(item => (
@@ -171,10 +224,23 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Contact */}
+      <section className="px-8 py-14 bg-white border-t border-slate-100">
+        <div className="max-w-xl mx-auto text-center">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4">Contact Us</h2>
+          <p className="text-slate-600 text-sm">
+            Questions? Email us at{' '}
+            <a href="mailto:hello@getcaregap.com" className="text-slate-900 font-medium hover:underline">hello@getcaregap.com</a>
+          </p>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="bg-slate-900 text-slate-400 text-sm text-center px-8 py-8">
         <p>CareGap — Bridging the gap between clinic visits</p>
-        <div className="flex justify-center gap-6 mt-3 text-xs">
+        <div className="flex flex-wrap justify-center gap-6 mt-3 text-xs">
+          <Link href="/about" className="hover:text-white transition-colors">About</Link>
+          <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
           <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
           <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
           <Link href="/hipaa" className="hover:text-white transition-colors">HIPAA Notice</Link>

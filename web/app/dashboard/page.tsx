@@ -89,7 +89,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'Total Patients', value: patients.length, color: 'slate' },
             { label: 'Critical', value: red.length, color: 'red', sub: 'Callback required' },
@@ -208,13 +208,18 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto max-w-full">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  {['Name','Age','Gender','City','Systolic','Diastolic','Missed Doses','Risk'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">{h}</th>
-                  ))}
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Age</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide hidden md:table-cell">Gender</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide hidden md:table-cell">City</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Systolic</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Diastolic</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Missed Doses</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Risk</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -222,8 +227,8 @@ export default function Dashboard() {
                   <tr key={i} className="hover:bg-slate-50 transition-colors">
                     <td className="px-4 py-3 font-medium text-slate-800">{p.NAME}</td>
                     <td className="px-4 py-3 text-slate-600">{p.AGE}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.GENDER}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.CITY}</td>
+                    <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{p.GENDER}</td>
+                    <td className="px-4 py-3 text-slate-600 hidden md:table-cell">{p.CITY}</td>
                     <td className="px-4 py-3 text-slate-600">{Math.round(parseFloat(String(p.systolic)))}</td>
                     <td className="px-4 py-3 text-slate-600">{Math.round(parseFloat(String(p.diastolic)))}</td>
                     <td className="px-4 py-3 text-slate-600">{p.total_missed}</td>

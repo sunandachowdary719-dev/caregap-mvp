@@ -63,14 +63,14 @@ export default function Hipaa() {
                 <li key={title} className="flex gap-3"><span className="text-slate-400 shrink-0">—</span><span><strong className="text-slate-800">{title}:</strong> {desc}</span></li>
               ))}
             </ul>
-            <p className="mt-3">To exercise any right, submit a written request to <a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a>.</p>
+            <p className="mt-3">To exercise any right, submit a written request to <a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a>.</p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-slate-900 mb-3">4. Complaint Process</h2>
             <p>If you believe CareGap has violated your HIPAA privacy rights, you may:</p>
             <ul className="space-y-2 pl-4 mt-3">
-              <li className="flex gap-3"><span className="text-slate-400 shrink-0">—</span>File a complaint directly with CareGap at <a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a></li>
+              <li className="flex gap-3"><span className="text-slate-400 shrink-0">—</span>File a complaint directly with CareGap at <a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a></li>
               <li className="flex gap-3"><span className="text-slate-400 shrink-0">—</span>File a complaint with the U.S. Department of Health and Human Services (HHS) Office for Civil Rights at <span className="font-medium text-slate-800">www.hhs.gov/ocr/privacy</span></li>
             </ul>
             <p className="mt-3">CareGap will not retaliate against you for filing a complaint.</p>
@@ -78,7 +78,7 @@ export default function Hipaa() {
 
           <section>
             <h2 className="text-base font-semibold text-slate-900 mb-3">5. Business Associate Agreements</h2>
-            <p>CareGap operates as a Business Associate under HIPAA for clinics that are Covered Entities. Before any clinic may use CareGap to process live patient PHI, a signed Business Associate Agreement (BAA) must be in place between the clinic and CareGap. To request a BAA, contact us at <a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a>. The BAA governs our respective obligations with respect to the safeguarding, use, and disclosure of PHI.</p>
+            <p>CareGap operates as a Business Associate under HIPAA for clinics that are Covered Entities. Before any clinic may use CareGap to process live patient PHI, a signed Business Associate Agreement (BAA) must be in place between the clinic and CareGap. To request a BAA, contact us at <a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a>. The BAA governs our respective obligations with respect to the safeguarding, use, and disclosure of PHI.</p>
           </section>
 
           <section>
@@ -88,7 +88,7 @@ export default function Hipaa() {
 
           <section>
             <h2 className="text-base font-semibold text-slate-900 mb-3">7. Contact</h2>
-            <p>Privacy Officer, CareGap<br /><a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a></p>
+            <p>Privacy Officer, CareGap<br /><a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a></p>
           </section>
 
         </div>

@@ -54,7 +54,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-base font-semibold text-slate-900 mb-3">4. HIPAA Compliance</h2>
-            <p>CareGap is designed to operate in compliance with the Health Insurance Portability and Accountability Act (HIPAA). We treat all patient-submitted health information as Protected Health Information (PHI) under HIPAA's Privacy Rule and Security Rule. Clinics using CareGap as a covered entity or business associate are required to execute a Business Associate Agreement (BAA) with CareGap prior to processing live patient data. Please contact us at <a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a> to request a BAA.</p>
+            <p>CareGap is designed to operate in compliance with the Health Insurance Portability and Accountability Act (HIPAA). We treat all patient-submitted health information as Protected Health Information (PHI) under HIPAA's Privacy Rule and Security Rule. Clinics using CareGap as a covered entity or business associate are required to execute a Business Associate Agreement (BAA) with CareGap prior to processing live patient data. Please contact us at <a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a> to request a BAA.</p>
           </section>
 
           <section>
@@ -75,7 +75,7 @@ export default function Privacy() {
                 <li key={item} className="flex gap-3"><span className="text-slate-400 shrink-0">—</span>{item}</li>
               ))}
             </ul>
-            <p className="mt-3">To exercise any of these rights, submit a written request to <a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a>. We will respond within 30 days.</p>
+            <p className="mt-3">To exercise any of these rights, submit a written request to <a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a>. We will respond within 30 days.</p>
           </section>
 
           <section>
@@ -85,7 +85,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-base font-semibold text-slate-900 mb-3">8. Contact</h2>
-            <p>For privacy-related inquiries, data requests, or to report a concern, contact us at:<br /><a href="mailto:contact@caregap.com" className="text-blue-600 hover:underline">contact@caregap.com</a></p>
+            <p>For privacy-related inquiries, data requests, or to report a concern, contact us at:<br /><a href="mailto:hello@getcaregap.com" className="text-blue-600 hover:underline">hello@getcaregap.com</a></p>
           </section>
 
         </div>

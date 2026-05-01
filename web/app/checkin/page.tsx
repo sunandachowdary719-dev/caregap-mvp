@@ -70,14 +70,17 @@ export default function CheckinPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="bg-slate-900 text-white px-8 py-5">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-xl font-semibold">Weekly Health Check-in</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Takes 60 seconds. Helps your doctor monitor you between visits.</p>
+      <div className="bg-slate-900 text-white px-6 py-5">
+        <div className="max-w-2xl mx-auto flex items-start justify-between">
+          <div>
+            <a href="/" className="text-slate-400 hover:text-white text-xs font-medium transition-colors mb-2 inline-block">← CareGap</a>
+            <h1 className="text-xl font-semibold">Weekly Health Check-in</h1>
+            <p className="text-slate-400 text-sm mt-0.5">Takes 60 seconds. Helps your doctor monitor you between visits.</p>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-800 mb-3">1. Select your name</h3>
