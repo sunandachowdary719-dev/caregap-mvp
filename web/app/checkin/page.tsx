@@ -16,7 +16,7 @@ export default function CheckinPage() {
     fetch('/api/patients')
       .then(r => r.json())
       .then(data => {
-        const names = data.patients.map((p: any) => p.NAME)
+        const names = (data.patients || []).map((p: any) => p.name || p.NAME)
         setPatients(names)
         setSelectedPatient(names[0])
       })
@@ -55,29 +55,30 @@ export default function CheckinPage() {
   }
 
   if (submitted) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl p-10 shadow-lg text-center max-w-md">
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Check-in submitted</h2>
+        <p className="text-slate-500 mb-6">Your care team will review your data and reach out if needed.</p>
+        <p className="text-sm text-slate-400">BP: {systolic}/{diastolic} mmHg</p>
+        <button onClick={() => setSubmitted(false)}
+          className="mt-6 bg-blue-600 text-white px-6 py-2 rounded-xl font-medium hover:bg-blue-700">
+          Submit another
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <div className="bg-slate-900 text-white px-8 py-5">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-xl font-semibold">Weekly Health Check-in</h1>
           <p className="text-slate-400 text-sm mt-0.5">Takes 60 seconds. Helps your doctor monitor you between visits.</p>
         </div>
       </div>
-)
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white px-8 py-6">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold">💊 Weekly Health Check-in</h1>
-          <p className="text-blue-200 mt-1">Takes 60 seconds · Helps your doctor monitor you between visits</p>
-        </div>
-      </div>
 
       <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
 
-        {/* Patient select */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-800 mb-3">1. Select your name</h3>
           <select
@@ -88,7 +89,6 @@ export default function CheckinPage() {
           </select>
         </div>
 
-        {/* BP input */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-800 mb-1">2. Blood Pressure Reading</h3>
           <p className="text-slate-400 text-sm mb-4">Enter your reading from your home BP monitor</p>
@@ -114,15 +114,14 @@ export default function CheckinPage() {
               systolic >= 140 || diastolic >= 90 ? 'bg-yellow-100 text-yellow-700' :
               'bg-green-100 text-green-700'
             }`}>
-              {systolic}/{diastolic} mmHg · {
-                systolic >= 160 || diastolic >= 100 ? '🔴 High' :
-                systolic >= 140 || diastolic >= 90 ? '🟡 Elevated' : '🟢 Normal'
+              {systolic}/{diastolic} mmHg — {
+                systolic >= 160 || diastolic >= 100 ? 'High' :
+                systolic >= 140 || diastolic >= 90 ? 'Elevated' : 'Normal'
               }
             </span>
           </div>
         </div>
 
-        {/* Medication */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-800 mb-4">3. Medication this week</h3>
           <div className="space-y-3">
@@ -133,13 +132,12 @@ export default function CheckinPage() {
                     ? 'border-blue-500 bg-blue-50 text-blue-800'
                     : 'border-slate-200 text-slate-600 hover:border-slate-300'
                 }`}>
-                {option === 'Yes, every day' ? '✅' : option === 'Missed 1-2 days' ? '⚠️' : '❌'} {option}
+                {option}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Symptoms */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-bold text-slate-800 mb-4">4. Any symptoms this week?</h3>
           <div className="grid grid-cols-2 gap-3">
@@ -156,14 +154,13 @@ export default function CheckinPage() {
           </div>
         </div>
 
-        {/* Submit */}
         <button onClick={handleSubmit} disabled={!meds || loading}
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-          {loading ? 'Submitting...' : 'Submit Check-in ✅'}
+          className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+          {loading ? 'Submitting...' : 'Submit Check-in'}
         </button>
 
         <p className="text-center text-slate-400 text-xs pb-6">
-          Your data is private and only shared with your care team · CareGap
+          Your data is private and only shared with your care team
         </p>
       </div>
     </div>
