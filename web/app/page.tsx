@@ -44,7 +44,7 @@ export default function Home() {
         <div className="flex gap-6 text-sm font-medium items-center">
           <Link href="/about" className="text-slate-300 hover:text-white transition-colors">About</Link>
           <Link href="/faq" className="text-slate-300 hover:text-white transition-colors">FAQ</Link>
-          <a href="https://calendly.com" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">Book a Demo</a>
+          <a href="https://calendly.com/sunandachowdary719/30min" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">Book a Demo</a>
           <Link href="/dashboard" className="text-slate-300 hover:text-white transition-colors">View Dashboard</Link>
           <Link href="/login" className="text-slate-300 hover:text-white transition-colors">Clinic Login</Link>
           <Link href="/checkin" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Patient Check-in</Link>
@@ -63,6 +63,9 @@ export default function Home() {
           <Link href="/dashboard" className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
             View Dashboard
           </Link>
+          <a href="https://calendly.com/sunandachowdary719/30min" target="_blank" rel="noopener noreferrer" className="bg-white hover:bg-slate-100 text-slate-900 px-6 py-3 rounded-lg font-medium transition-colors">
+            Book a Demo Call
+          </a>
           <Link href="/checkin" className="border border-slate-500 hover:border-slate-300 text-slate-200 px-6 py-3 rounded-lg font-medium transition-colors">
             Patient Check-in
           </Link>
